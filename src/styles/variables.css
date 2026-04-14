@@ -1,0 +1,18 @@
+:root {
+    --color-white: #ffffff;
+    --color-text: rgba(255, 255, 255, 0.92);
+    --color-text-soft: rgba(255, 255, 255, 0.78);
+    --color-text-muted: rgba(255, 255, 255, 0.64);
+
+    --color-border: rgba(255, 255, 255, 0.18);
+    --color-panel: rgba(255, 255, 255, 0.1);
+    --color-panel-dark: rgba(0, 0, 0, 0.16);
+
+    --color-button: rgba(255, 255, 255, 0.12);
+    --color-button-hover: rgba(255, 255, 255, 0.2);
+
+    --shadow-soft: 0 20px 60px rgba(0, 0, 0, 0.28);
+    --blur-panel: blur(14px);
+
+    --font-main: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}

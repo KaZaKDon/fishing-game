@@ -1,0 +1,96 @@
+.fishing-screen {
+    position: relative;
+    min-height: 100vh;
+    background: linear-gradient(to bottom, #1f4d6b, #0a1e2c);
+    cursor: pointer;
+    overflow: hidden;
+}
+
+/* текст */
+
+.fishing-screen__info {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: white;
+  font-size: 18px;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+  z-index: 10;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+}
+
+/* поплавок */
+
+.fishing-float {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+
+    width: 10px;
+    height: 40px;
+    border-radius: 6px;
+
+    background: linear-gradient(to bottom, red 50%, white 50%);
+
+    animation: fishing-float-idle 1.5s infinite ease-in-out;
+}
+
+.fishing-float--bite {
+    animation: fishing-float-bite 0.4s infinite;
+}
+
+/* леска */
+
+.fishing-line {
+    position: absolute;
+    top: 0;
+    right: 20%;
+
+    width: 2px;
+    height: 60%;
+
+    background: rgba(255, 255, 255, 0.6);
+
+    transform-origin: top;
+    transform: rotate(10deg);
+
+    transition: transform 0.2s ease;
+}
+
+/* когда тянем */
+
+.fishing-line--tension {
+    transform: rotate(25deg);
+}
+
+/* анимации */
+
+@keyframes fishing-float-idle {
+    0% {
+        transform: translate(-50%, -50%) translateY(0px);
+    }
+
+    50% {
+        transform: translate(-50%, -50%) translateY(4px);
+    }
+
+    100% {
+        transform: translate(-50%, -50%) translateY(0px);
+    }
+}
+
+@keyframes fishing-float-bite {
+    0% {
+        transform: translate(-50%, -50%) translateY(0px);
+    }
+
+    50% {
+        transform: translate(-50%, -50%) translateY(12px);
+    }
+
+    100% {
+        transform: translate(-50%, -50%) translateY(0px);
+    }
+}

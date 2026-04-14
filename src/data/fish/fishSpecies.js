@@ -1,0 +1,32 @@
+export const fishSpecies = [
+    {
+        id: "crucian",
+        name: "Карась",
+        kind: "peaceful",
+        rarity: "common",
+        weightMin: 0.2,
+        weightMax: 2.5,
+        basePrice: 30,
+        bitePattern: "soft_nibble",
+    },
+    {
+        id: "roach",
+        name: "Плотва",
+        kind: "peaceful",
+        rarity: "common",
+        weightMin: 0.1,
+        weightMax: 1.2,
+        basePrice: 20,
+        bitePattern: "quick_sink",
+    },
+    {
+        id: "pike",
+        name: "Щука",
+        kind: "predator",
+        rarity: "uncommon",
+        weightMin: 1.5,
+        weightMax: 8,
+        basePrice: 180,
+        bitePattern: "side_dash",
+    },
+];
