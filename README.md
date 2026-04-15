@@ -1,16 +1,38 @@
-# React + Vite
+# Рыболовная игра (MVP)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Минимальный прототип игры про рыбалку с упором на ощущение процесса ловли и базовую игровую механику.
 
-Currently, two official plugins are available:
+## Концепция
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Игра строится на сочетании:
+- спокойствия в процессе ловли
+- азарта в моменте поклёвки и вываживания
 
-## React Compiler
+Это не чистый симулятор и не аркада.  
+Основной фокус — ощущение контроля, реакции и напряжения.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Игровой цикл
 
-## Expanding the ESLint configuration
+1. Заброс
+2. Ожидание
+3. Поклёвка
+4. Подсечка
+5. Вываживание
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Игрок взаимодействует с процессом через:
+- реакцию на поклёвку
+- контроль натяжения лески
+
+## Техническая основа
+
+- React (Vite)
+- JavaScript (без TypeScript)
+- CSS (без UI-библиотек)
+- Локальное хранение через localStorage
+
+## Назначение проекта
+
+Проект создаётся как:
+- основа для дальнейшего развития полноценной игры
+- отработка механики ловли
+- база для расширения (рыбы, экономика, PvP, сервер)

@@ -9,17 +9,29 @@ export function getReactionTime() {
 }
 
 export function increaseTension(currentValue) {
-    return Math.min(currentValue + 1.8, 100);
+    return Math.min(currentValue + 1.6, 100);
 }
 
 export function decreaseTension(currentValue) {
-    return Math.max(currentValue - 1.2, 0);
+    return Math.max(currentValue - 1.4, 0);
 }
 
 export function isTensionTooHigh(value) {
-    return value >= 92;
+    return value > 80;
 }
 
 export function isTensionTooLow(value) {
-    return value <= 8;
+    return value < 20;
+}
+
+export function isTensionInSafeZone(value) {
+    return value >= 20 && value <= 80;
+}
+
+export function increaseReelProgress(currentValue) {
+    return Math.min(currentValue + 3.5, 100);
+}
+
+export function decreaseReelProgress(currentValue) {
+    return Math.max(currentValue - 0.35, 0);
 }
