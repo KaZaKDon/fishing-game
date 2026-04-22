@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import "./FishingScreen.css";
 import TensionBar from "../../components/fishing/TensionBar";
 import {
@@ -36,9 +36,13 @@ function isRareFish(fish) {
     return rarity === "rare" || rarity === "epic" || rarity === "legendary";
 }
 
+function stopEvent(event) {
+    event.stopPropagation();
+}
+
 export default function FishingScreen() {
     const [game, setGame] = useState({
-        phase: "idle", // idle | waiting | bite | reeling | success | failed | keepnet_full
+        phase: "idle",
         showFloat: false,
         isHolding: false,
         tension: 0,
@@ -183,6 +187,7 @@ export default function FishingScreen() {
                         ...prev,
                         phase: "failed",
                         showFloat: false,
+                        isHolding: false,
                         failReason: "miss_bite",
                     };
                 });
@@ -273,14 +278,16 @@ export default function FishingScreen() {
                 lowTensionTimeoutRef.current = null;
             }
 
-            const addResult = tryAddFishToInventory(
-                game.inventory,
-                fish,
-                game.keepnetLimit
-            );
-
             setGame((prev) => {
+                const addResult = tryAddFishToInventory(
+                    prev.inventory,
+                    fish,
+                    prev.keepnetLimit
+                );
+
                 if (!addResult.added) {
+                    successHandledRef.current = false;
+
                     return {
                         ...prev,
                         phase: "keepnet_full",
@@ -307,13 +314,9 @@ export default function FishingScreen() {
                 };
             });
 
-            if (addResult.added) {
-                scheduleReset(1500);
-            } else {
-                successHandledRef.current = false;
-            }
+            scheduleReset(1500);
         },
-        [game.inventory, game.keepnetLimit, scheduleReset]
+        [scheduleReset]
     );
 
     const handleSellAll = useCallback(() => {
@@ -321,13 +324,11 @@ export default function FishingScreen() {
             if (!prev.pendingFish) return prev;
 
             const sellResult = sellInventory(prev.inventory);
-
             const addResult = tryAddFishToInventory(
                 sellResult.inventory,
                 prev.pendingFish,
                 prev.keepnetLimit
             );
-
             const inventoryStats = getInventoryStats(addResult.inventory);
             const nextFishStats = updateFishStats(prev.fishStats, prev.pendingFish);
 
@@ -359,7 +360,6 @@ export default function FishingScreen() {
                 prev.pendingFish,
                 prev.keepnetLimit
             );
-
             const inventoryStats = getInventoryStats(replaceResult.inventory);
             const nextFishStats = updateFishStats(prev.fishStats, prev.pendingFish);
 
@@ -393,7 +393,7 @@ export default function FishingScreen() {
         successHandledRef.current = false;
     }, []);
 
-    const handleClick = useCallback(() => {
+    const handleScreenAction = useCallback(() => {
         if (game.phase === "keepnet_full") return;
 
         if (game.phase === "idle") {
@@ -411,7 +411,7 @@ export default function FishingScreen() {
         }
     }, [game.phase, handleCast, failRound, startReeling]);
 
-    const handleMouseDown = useCallback(() => {
+    const beginHolding = useCallback(() => {
         setGame((prev) => {
             if (prev.phase !== "reeling") return prev;
 
@@ -422,9 +422,9 @@ export default function FishingScreen() {
         });
     }, []);
 
-    const handleMouseUp = useCallback(() => {
+    const stopHolding = useCallback(() => {
         setGame((prev) => {
-            if (prev.phase !== "reeling") return prev;
+            if (prev.phase !== "reeling" || !prev.isHolding) return prev;
 
             return {
                 ...prev,
@@ -432,6 +432,20 @@ export default function FishingScreen() {
             };
         });
     }, []);
+
+    const handlePointerDown = useCallback(
+        (event) => {
+            if (game.phase === "reeling") {
+                beginHolding();
+                return;
+            }
+
+            if (event.pointerType !== "mouse") {
+                handleScreenAction();
+            }
+        },
+        [beginHolding, game.phase, handleScreenAction]
+    );
 
     const handleKeyDown = useCallback(
         (event) => {
@@ -439,49 +453,25 @@ export default function FishingScreen() {
 
             event.preventDefault();
 
-            if (game.phase === "keepnet_full") return;
-
-            if (game.phase === "idle") {
-                handleCast();
-                return;
-            }
-
-            if (game.phase === "waiting") {
-                failRound("cancel");
-                return;
-            }
-
-            if (game.phase === "bite") {
-                startReeling();
-                return;
-            }
-
             if (game.phase === "reeling") {
-                setGame((prev) => {
-                    if (prev.phase !== "reeling") return prev;
-
-                    return {
-                        ...prev,
-                        isHolding: true,
-                    };
-                });
+                beginHolding();
+                return;
             }
+
+            handleScreenAction();
         },
-        [game.phase, handleCast, failRound, startReeling]
+        [beginHolding, game.phase, handleScreenAction]
     );
 
-    const handleKeyUp = useCallback((event) => {
-        if (event.code !== "Space") return;
+    const handleKeyUp = useCallback(
+        (event) => {
+            if (event.code !== "Space") return;
 
-        setGame((prev) => {
-            if (prev.phase !== "reeling") return prev;
-
-            return {
-                ...prev,
-                isHolding: false,
-            };
-        });
-    }, []);
+            event.preventDefault();
+            stopHolding();
+        },
+        [stopHolding]
+    );
 
     useEffect(() => {
         if (game.phase !== "reeling") return;
@@ -581,73 +571,55 @@ export default function FishingScreen() {
         };
     }, [clearTimers]);
 
-    const fishStatsList = getFishStatsList(game.fishStats);
+    const fishStatsList = useMemo(() => getFishStatsList(game.fishStats), [game.fishStats]);
+    const statsCaughtTotal = game.fishStats.totalCaught ?? 0;
 
     const getStatusText = () => {
-        if (game.phase === "idle") return "Кликните, чтобы забросить";
+        if (game.phase === "idle") return "Кликните или тапните, чтобы забросить";
         if (game.phase === "waiting") return "Ожидание поклёвки...";
         if (game.phase === "bite") return "Клюёт! Быстро подсекайте!";
-
         if (game.phase === "reeling") {
             if (shouldRevealFishEarly(game.fish)) {
                 return `На крючке: ${game.fish.name} · ${game.fish.weight} кг · ${getBehaviorLabel(game.fish)}`;
             }
-
-            return "Зажмите мышь или пробел и держите натяжение в зелёной зоне";
+            return "Держите натяжение в зелёной зоне";
         }
-
         if (game.phase === "keepnet_full" && game.pendingFish) {
             if (isRareFish(game.pendingFish)) {
                 return `Редкий улов! ${game.pendingFish.name} · ${game.pendingFish.weight} кг · садок заполнен`;
             }
-
             return `Садок заполнен. ${game.pendingFish.name} · ${game.pendingFish.weight} кг ждёт решения`;
         }
-
         if (game.phase === "failed") {
-            if (game.failReason === "miss_bite") {
-                return "Слишком поздно — рыба ушла";
-            }
-            if (game.failReason === "cancel") {
-                return "Заброс отменён";
-            }
-            if (game.failReason === "tension_high") {
-                return "Слишком сильное натяжение — леска порвалась";
-            }
-            if (game.failReason === "tension_low") {
-                return "Слишком слабое натяжение — рыба сорвалась";
-            }
+            if (game.failReason === "miss_bite") return "Слишком поздно — рыба ушла";
+            if (game.failReason === "cancel") return "Заброс отменён";
+            if (game.failReason === "tension_high") return "Слишком сильное натяжение — леска порвалась";
+            if (game.failReason === "tension_low") return "Слишком слабое натяжение — рыба сорвалась";
             return "Неудача";
         }
-
         if (game.phase === "success" && game.fish) {
-            return `Поймано: ${game.fish.name} · ${game.fish.weight} кг · +${game.fish.price}₽`;
+            return `Поймано: ${game.fish.name} · ${game.fish.weight} кг · +${game.fish.price} ₽`;
         }
-
         return "";
     };
+
+    const showBottomStatus = game.phase !== "reeling";
+    const showBottomTensionHud = game.phase === "reeling";
 
     return (
         <div
             className="fishing-screen"
-            onClick={handleClick}
-            onMouseDown={handleMouseDown}
-            onMouseUp={handleMouseUp}
+            onClick={handleScreenAction}
+            onPointerDown={handlePointerDown}
+            onPointerUp={stopHolding}
+            onPointerCancel={stopHolding}
+            onPointerLeave={stopHolding}
+            role="button"
+            tabIndex={0}
+            aria-label="Экран ловли"
         >
-            <div className="fishing-screen__info">{getStatusText()}</div>
-
-            <button
-                type="button"
-                className="fishing-screen__stats-button"
-                onClick={(e) => {
-                    e.stopPropagation();
-                    toggleStats();
-                }}
-                onMouseDown={(e) => e.stopPropagation()}
-                onMouseUp={(e) => e.stopPropagation()}
-            >
-                {game.isStatsOpen ? "Закрыть статистику" : "Статистика улова"}
-            </button>
+            <div className="fishing-screen__background" aria-hidden="true" />
+            <div className="fishing-screen__water-glow" aria-hidden="true" />
 
             {game.showFloat && (
                 <div
@@ -658,35 +630,36 @@ export default function FishingScreen() {
             )}
 
             {game.phase === "reeling" && (
-                <>
-                    <div
-                        className={`fishing-line ${
-                            game.isHolding ? "fishing-line--tension" : ""
-                        }`}
-                    />
-                    <TensionBar
-                        value={game.tension}
-                        safeZone={getSafeZone(game.fish)}
-                    />
-                </>
+                <div className={`fishing-line ${game.isHolding ? "fishing-line--tension" : ""}`} />
             )}
 
             <div className="fishing-screen__inventory-stats">
                 <div>Деньги: {game.money} ₽</div>
-                <div>
-                    Садок: {game.inventory.length} / {game.keepnetLimit}
-                </div>
-                <div>Рыб поймано: {game.totalCaught}</div>
-                <div>Общий вес: {game.totalWeight} кг</div>
-                <div>Стоимость улова: {game.estimatedValue} ₽</div>
+                <div>Садок: {game.inventory.length} / {game.keepnetLimit}</div>
+                <div>Вес в садке: {game.totalWeight} кг</div>
+                <div>Стоимость в садке: {game.estimatedValue} ₽</div>
+                <div>Поймано за сессию: {statsCaughtTotal}</div>
             </div>
+
+            <button
+                type="button"
+                className="fishing-screen__stats-button"
+                onClick={(event) => {
+                    stopEvent(event);
+                    toggleStats();
+                }}
+                onPointerDown={stopEvent}
+                onPointerUp={stopEvent}
+            >
+                {game.isStatsOpen ? "Закрыть статистику" : "Статистика улова"}
+            </button>
 
             {game.isStatsOpen && (
                 <div
                     className="fishing-screen__fish-stats"
-                    onClick={(e) => e.stopPropagation()}
-                    onMouseDown={(e) => e.stopPropagation()}
-                    onMouseUp={(e) => e.stopPropagation()}
+                    onClick={stopEvent}
+                    onPointerDown={stopEvent}
+                    onPointerUp={stopEvent}
                 >
                     <div className="fishing-screen__fish-stats-title">
                         Статистика по видам
@@ -722,6 +695,39 @@ export default function FishingScreen() {
                 </div>
             )}
 
+            {showBottomStatus && (
+                <div className="fishing-screen__bottom-status">
+                    {getStatusText()}
+                </div>
+            )}
+
+            {showBottomTensionHud && (
+                <div className="fishing-screen__bottom-tension">
+                    <div className="fishing-screen__zone-strip" aria-hidden="true">
+                        <span className="fishing-screen__zone fishing-screen__zone--low">
+                            СЛАБО
+                        </span>
+                        <span className="fishing-screen__zone fishing-screen__zone--safe">
+                            ЗОНА ВЫВАЖИВАНИЯ
+                        </span>
+                        <span className="fishing-screen__zone fishing-screen__zone--high">
+                            РВЁТ ЛЕСКУ
+                        </span>
+                    </div>
+
+                    <div className="fishing-screen__bottom-tension-bar">
+                        <TensionBar
+                            value={game.tension}
+                            safeZone={getSafeZone(game.fish)}
+                        />
+                    </div>
+
+                    <div className="fishing-screen__bottom-tension-text">
+                        {getStatusText()}
+                    </div>
+                </div>
+            )}
+
             {game.phase === "keepnet_full" && game.pendingFish && (
                 <div
                     className={`fishing-screen__keepnet-modal ${
@@ -729,9 +735,9 @@ export default function FishingScreen() {
                             ? "fishing-screen__keepnet-modal--rare"
                             : ""
                     }`}
-                    onClick={(e) => e.stopPropagation()}
-                    onMouseDown={(e) => e.stopPropagation()}
-                    onMouseUp={(e) => e.stopPropagation()}
+                    onClick={stopEvent}
+                    onPointerDown={stopEvent}
+                    onPointerUp={stopEvent}
                 >
                     <div className="fishing-screen__keepnet-title">
                         {isRareFish(game.pendingFish)
