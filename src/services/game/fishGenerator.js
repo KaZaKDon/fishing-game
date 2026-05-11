@@ -29,10 +29,15 @@ function pickFishByChance(list) {
     return list[list.length - 1];
 }
 
-export function generateFish() {
+export function generateFish(spot) {
+    const modifiers = spot?.modifiers ?? {};
+
     const fish = pickFishByChance(fishSpecies);
+
+    const weightBonus = modifiers.weightBonus ?? 0;
     const rawWeight = getRandomFloat(fish.weightMin, fish.weightMax);
-    const weight = Number(rawWeight.toFixed(2));
+    const weight = Number((rawWeight * (1 + weightBonus)).toFixed(2));
+
     const price = Math.round(weight * fish.basePrice);
 
     return {
@@ -44,5 +49,10 @@ export function generateFish() {
         rarity: getRarityLabel(fish.rarity),
         weight,
         price,
+
+        spotId: spot?.id ?? null,
+        spotTitle: spot?.title ?? null,
+        powerBonus: modifiers.fishPower ?? 0,
+        rareChanceBonus: modifiers.rareChance ?? 0,
     };
 }

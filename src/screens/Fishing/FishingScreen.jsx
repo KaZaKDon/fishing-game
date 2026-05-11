@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { getSpotById } from "../../data/locations/fishingSpots";
 import "./FishingScreen.css";
 import TensionBar from "../../components/fishing/TensionBar";
 import {
@@ -69,6 +71,13 @@ export default function FishingScreen() {
         },
     });
 
+    const navigate = useNavigate();
+    const { spotId } = useParams();
+
+    const currentSpot = useMemo(() => {
+        if (!spotId) return null;
+        return getSpotById(spotId);
+    }, [spotId]);
     const biteTimerRef = useRef(null);
     const missTimerRef = useRef(null);
     const tensionIntervalRef = useRef(null);
@@ -206,7 +215,7 @@ export default function FishingScreen() {
         setGame((prev) => {
             if (prev.phase !== "bite") return prev;
 
-            const fish = generateFish();
+            const fish = generateFish(currentSpot);
             const now = Date.now();
 
             return {
@@ -226,7 +235,7 @@ export default function FishingScreen() {
                 },
             };
         });
-    }, []);
+    }, [currentSpot]);
 
     const failRound = useCallback(
         (reason) => {
@@ -618,14 +627,40 @@ export default function FishingScreen() {
             tabIndex={0}
             aria-label="Экран ловли"
         >
-            <div className="fishing-screen__background" aria-hidden="true" />
+            {currentSpot && (
+                <div className="location-name">
+                    {currentSpot.title}
+                </div>
+            )}
+            <div className="fishing-screen__topbar">
+                <button
+                    type="button"
+                    className="secondary-button fishing-screen__back-button"
+                    onClick={(event) => {
+                        event.stopPropagation();
+                        navigate("/base");
+                    }}
+                    onPointerDown={(event) => event.stopPropagation()}
+                    onPointerUp={(event) => event.stopPropagation()}
+                >
+                    На базу
+                </button>
+            </div>
+            <div
+                className="fishing-screen__background"
+                aria-hidden="true"
+                style={
+                    currentSpot?.background
+                        ? { "--spot-bg": `url(${currentSpot.background})` }
+                        : undefined
+                }
+            />
             <div className="fishing-screen__water-glow" aria-hidden="true" />
 
             {game.showFloat && (
                 <div
-                    className={`fishing-float ${
-                        game.phase === "bite" ? "fishing-float--bite" : ""
-                    }`}
+                    className={`fishing-float ${game.phase === "bite" ? "fishing-float--bite" : ""
+                        }`}
                 />
             )}
 
@@ -730,11 +765,10 @@ export default function FishingScreen() {
 
             {game.phase === "keepnet_full" && game.pendingFish && (
                 <div
-                    className={`fishing-screen__keepnet-modal ${
-                        isRareFish(game.pendingFish)
-                            ? "fishing-screen__keepnet-modal--rare"
-                            : ""
-                    }`}
+                    className={`fishing-screen__keepnet-modal ${isRareFish(game.pendingFish)
+                        ? "fishing-screen__keepnet-modal--rare"
+                        : ""
+                        }`}
                     onClick={stopEvent}
                     onPointerDown={stopEvent}
                     onPointerUp={stopEvent}

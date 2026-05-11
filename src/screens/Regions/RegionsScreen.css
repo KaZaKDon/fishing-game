@@ -1,0 +1,63 @@
+.regions-screen {
+    min-height: 100vh;
+    padding: 24px;
+    background: #17251d;
+    color: #fff;
+}
+
+.regions-screen__top {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.regions-screen__top button {
+    padding: 10px 16px;
+    border-radius: 10px;
+    border: 1px solid #fff;
+    background: transparent;
+    color: #fff;
+    cursor: pointer;
+}
+
+.regions-screen__grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+}
+
+.region-card {
+    min-height: 180px;
+    padding: 18px;
+    border-radius: 18px;
+    text-align: left;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: #263b2d;
+    color: #fff;
+    cursor: pointer;
+}
+
+.region-card:hover {
+    background: #31503a;
+}
+
+.region-card:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.region-card h2 {
+    margin: 0 0 10px;
+}
+
+.region-card p {
+    margin: 0 0 20px;
+    opacity: 0.8;
+}
+
+@media (max-width: 900px) {
+    .regions-screen__grid {
+        grid-template-columns: 1fr;
+    }
+}

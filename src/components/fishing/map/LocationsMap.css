@@ -1,0 +1,99 @@
+.locations-map {
+    position: relative;
+    min-height: 440px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 24px;
+    overflow: hidden;
+    background:
+        radial-gradient(circle at 15% 18%, rgba(255, 255, 255, 0.08), transparent 18%),
+        radial-gradient(circle at 82% 22%, rgba(255, 255, 255, 0.06), transparent 16%),
+        linear-gradient(180deg, #5d7b54 0%, #486445 100%);
+    box-shadow: var(--shadow-soft);
+}
+
+.locations-map__river {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg,
+            transparent 0%,
+            transparent 18%,
+            rgba(82, 151, 196, 0.96) 18%,
+            rgba(82, 151, 196, 0.96) 33%,
+            rgba(61, 126, 171, 0.96) 42%,
+            rgba(82, 151, 196, 0.96) 53%,
+            rgba(64, 134, 180, 0.96) 66%,
+            transparent 66%,
+            transparent 100%);
+}
+
+.locations-map__point {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: transparent;
+    color: #fff;
+}
+
+/* базовая точка */
+.locations-map__dot {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #2d7cff;
+    border: 2px solid #fff;
+}
+
+/* выбранная точка */
+.locations-map__point--selected .locations-map__dot {
+    background: #f5c542;
+    border-color: #fff;
+    box-shadow: 0 0 0 4px rgba(245, 197, 66, 0.25);
+    animation: pulse 1.5s infinite;
+}
+
+/* заблокированная */
+.locations-map__point--locked .locations-map__dot {
+    background: #666;
+    border-color: #aaa;
+}
+
+/* анимация пульса */
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(245, 197, 66, 0.6);
+    }
+
+    70% {
+        box-shadow: 0 0 0 12px rgba(245, 197, 66, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(245, 197, 66, 0);
+    }
+}
+
+.locations-map__label {
+    opacity: 0;
+    transition: opacity 0.18s ease;
+    white-space: nowrap;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 13px;
+    background: rgba(8, 20, 34, 0.78);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.locations-map__point:hover .locations-map__label,
+.locations-map__point--selected .locations-map__label {
+    opacity: 1;
+}
+
+.locations-map__point--selected .locations-map__dot {
+    background: #f4c542;
+}
+
+.locations-map__point--locked .locations-map__dot {
+    background: #727b85;
+}

@@ -28,7 +28,8 @@
     background:
         linear-gradient(180deg, rgba(7, 23, 39, 0.08) 0%, rgba(7, 23, 39, 0.18) 36%, rgba(5, 16, 28, 0.48) 100%),
         radial-gradient(circle at center bottom, rgba(133, 186, 216, 0.18), transparent 34%),
-        url("/images/fishing-don-bg.png") center center / cover no-repeat;
+        var(--spot-bg, url("/images/fishing-don-bg.png")) center center / cover no-repeat;
+
     transform: scale(1.02);
     filter: saturate(1.03) contrast(1.02);
 }
@@ -47,13 +48,11 @@
     height: 46%;
     background:
         linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, rgba(124, 190, 225, 0.06) 34%, rgba(16, 69, 106, 0.18) 100%),
-        repeating-linear-gradient(
-            180deg,
+        repeating-linear-gradient(180deg,
             rgba(255, 255, 255, 0.02) 0,
             rgba(255, 255, 255, 0.02) 2px,
             rgba(255, 255, 255, 0) 7px,
-            rgba(255, 255, 255, 0) 16px
-        );
+            rgba(255, 255, 255, 0) 16px);
     opacity: 0.8;
 }
 
@@ -404,7 +403,44 @@
     box-shadow: 0 8px 18px rgba(75, 85, 99, 0.28);
 }
 
+.fishing-screen__topbar {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    right: 20px;
+    z-index: 14;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.fishing-screen__back-button {
+    min-height: 46px;
+    padding: 0 18px;
+}
+
+.fishing-screen__location-pill {
+    display: inline-flex;
+    align-items: center;
+    min-height: 46px;
+    padding: 0 18px;
+    border-radius: 999px;
+    background: rgba(8, 20, 34, 0.64);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+}
+
+.fishing-back {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 20;
+}
+
 @media (max-width: 1100px) {
+
     .fishing-screen__bottom-status,
     .fishing-screen__bottom-tension {
         width: min(700px, calc(100vw - 290px));

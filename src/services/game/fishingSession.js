@@ -55,8 +55,16 @@ export function increaseTension(value, fish) {
     const multiplier = getFishValue(fish, "tensionUpMultiplier", 1);
     const difficulty = getFishValue(fish, "difficulty", 1);
     const weightFactor = getWeightFactor(fish);
+    const spotPower = fish?.powerBonus ?? 0;
+    const spotFactor = 1 + spotPower * 0.06;
 
-    let next = value + BASE_TENSION_UP * multiplier * difficulty * weightFactor;
+    let next =
+        value +
+        BASE_TENSION_UP *
+            multiplier *
+            difficulty *
+            weightFactor *
+            spotFactor;
 
     const behavior = getFishBehavior(fish);
 
@@ -79,13 +87,15 @@ export function decreaseTension(value, fish) {
     const multiplier = getFishValue(fish, "tensionDownMultiplier", 1);
     const difficulty = getFishValue(fish, "difficulty", 1);
     const weightFactor = getWeightFactor(fish);
+    const spotPower = fish?.powerBonus ?? 0;
+    const spotFactor = 1 + spotPower * 0.04;
 
     let next =
         value -
-        BASE_TENSION_DOWN *
+        (BASE_TENSION_DOWN *
             multiplier *
-            Math.max(0.85, difficulty * 0.9) /
-            Math.max(weightFactor, 0.85);
+            Math.max(0.85, difficulty * 0.9)) /
+            (Math.max(weightFactor, 0.85) * spotFactor);
 
     const behavior = getFishBehavior(fish);
 
